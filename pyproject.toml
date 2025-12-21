@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "training_app"
+version = "0.1.0"
+description = "Training app API"
+authors = ["Evgeniy Pivovarchik <eugene.pivovarchik@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.13"
+django = "^6.0"
+djangorestframework = "^3.16.1"
+psycopg2-binary = "^2.9.11"
+python-dotenv = "^1.2.1"
+djangorestframework-simplejwt = "^5.5.1"
+pillow = "^12.0.0"
+django-debug-toolbar = "^6.1.0"
+pymemcache = "^4.0.0"
+django-redis = "^6.0.0"
+drf-spectacular = "^0.29.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.12.0"
+isort = "^7.0.0"
+flake8 = "^7.3.0"
+pytest = "^9.0.2"
+pytest-django = "^4.11.1"
+pytest-factoryboy = "^2.8.1"
+factory-boy = "^3.3.3"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-lenght = 120
+exclude = '''
+    /{
+        \.git
+        | \.venv
+        | __pycache__
+        | migrations
+        | env
+        | venv
+    }/
+'''
+
+[tool.isort]
+profile = 'black'
+line_length = 120
+skip = ['migrations', 'env', 'venv', '.venv']
