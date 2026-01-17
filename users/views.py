@@ -49,6 +49,9 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        from users.tasks import send_verification_email
+        send_verification_email.delay(user.id)
+
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
 
@@ -65,6 +68,27 @@ class RegisterView(generics.CreateAPIView):
             status=status.HTTP_201_CREATED,
         )
 
+
+class ResendVerificationView(APIView):
+    """
+    Resend verification email endpoint.
+
+    POST /api/auth/resend-verification/
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResendVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        from users.tasks import send_verification_email
+        send_verification_email.delay(user.id)
+
+        return Response(
+            {"message": "Verification email sent. Please check your inbox."},
+                status=status.HTTP_200_OK
+        )
 
 class LoginView(APIView):
     """

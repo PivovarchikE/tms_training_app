@@ -8,6 +8,18 @@ services:
     ports:
       - '11211:11211'
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: training_rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit_secret
+      RABBITMQ_DEFAULT_VHOST: training_vhost
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   redis:
     image: redis:latest
@@ -19,14 +31,27 @@ services:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_DB: training
-      POSTGRES_USER: training_user
-      POSTGRES_PASSWORD: training_pass
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
+  flower:
+      image: mher/flower:2.0
+      restart: always
+      ports:
+        - "5555:5555"
+      environment:
+        - CELERY_BROKER_URL=amqp://training_rabbit:rabbit_secret@rabbitmq:5672/training_vhost
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      depends_on:
+        - rabbitmq
+        - redis
 
 volumes:
   postgres_data:
+  rabbitmq_data:
+  redis_data:

@@ -163,7 +163,9 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = False
 # EMAIL_TIMEOUT = 30
-# DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", 'http://localhost:3000')
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", 'noreply@trainingapp.com')
 
 
 # Simple JWT settings
@@ -205,9 +207,47 @@ CACHES = {
     },
     "redis": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",  # /1 - это номер базы в редисе
+        "LOCATION": "redis://127.0.0.1:6379/0",  # /1 - это номер базы в редисе
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
     },
+}
+
+
+# CELERY CONFIGURATION
+from celery.schedules import crontab
+
+# Broker
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL",
+    'amqp://training_rabbit:rabbit_secret@localhost:5672/training_vhost'
+)
+
+# Backend
+CELERY_RESULT_BACKEND = os.getenv(
+    'CELERY_RESULT_BACKEND',
+    'redis://localhost:6379/1'
+)
+
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+
+CELERY_RESULT_EXPIRES = 60 * 60 * 24
+CELERY_TASK_TRACK_STARTED = True
+
+# Scheduled tasks
+CELERY_BEAT_SCHEDULE = {
+    'send-weekly-report':{
+        'task': 'users.tasks.send_weekly_report',
+        'schedule': crontab(hour=9, minute=0, day_of_week=1),
+    },
+    'cleanup-unverified-users':{
+        'task': 'users.tasks.cleanup_unverified_users',
+        'schedule': crontab(hour=3, minute=0),
+    }
 }
